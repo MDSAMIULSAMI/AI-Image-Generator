@@ -1,21 +1,22 @@
-#pip install fastapi uvicorn torch torchvision transformers accelerate diffusers numpy==1.24.1
+import os
+import torch
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import torch
 from diffusers import StableDiffusionPipeline
 from io import BytesIO
 import base64
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"]
 )
 
-device = "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 dtype = torch.float32
 
 pipeline = StableDiffusionPipeline.from_pretrained(
@@ -34,6 +35,9 @@ def generate(prompt: str):
 
         return {"image": imgstr}
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": "An error occurred while generating the image."}
 
-print(torch.cuda.is_available())
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
