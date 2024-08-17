@@ -1,0 +1,1 @@
+pip install fastapi uvicorn torch torchvision transformers accelerate diffusers numpy==1.24.1
